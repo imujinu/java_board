@@ -4,13 +4,39 @@ import java.util.Map;
 
 public class AppTest2 {
     public static void main(String[] args) {
-        String queryString = "/user/article/write?id=1&subject=제목1&content=10+5=31&writerName=김철수&boardId=1";
-        Map<String, String> params = Util.getParamsFromUrl(queryString);
+
+        Rq rq = new Rq("/user/article/write?id=1&subject=제목1&content=10+5=31&writerName=김철수&boardId=1");
+        Map<String, String> params = rq.getParams();
         System.out.println(params);
+
+        String urlPath = rq.getUrlPath();
+        System.out.println(urlPath);
     }
 
 
 }
+class Rq{
+    String url;
+    Map<String, String> params;
+    String urlPath;
+
+    Rq(String url){
+        this.url = url;
+        params = Util.getParamsFromUrl(this.url);
+        urlPath = Util.getPathFromUrl(this.url);
+    }
+    Map<String, String> getParams(){
+
+
+        return params;
+    }
+    String getUrlPath(){
+
+
+        return urlPath;
+    }
+}
+
 
 class Util{
 static Map<String, String> getParamsFromUrl(String queryString){
@@ -26,4 +52,8 @@ static Map<String, String> getParamsFromUrl(String queryString){
     return params;
 
 }
+
+    public static String getPathFromUrl(String url) {
+    return url.split("\\?",2)[0];
+    }
 }
