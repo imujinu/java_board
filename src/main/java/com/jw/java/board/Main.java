@@ -6,14 +6,19 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+    static void writeArticleData(List<Article> articles){
+            articles.add(new Article(1, "1번 게시물", "1번 내용"));
+            articles.add(new Article(2, "2번 게시물", "2번 내용"));
+            articles.add(new Article(3, "3번 게시물", "3번 내용"));
+        }
     public static void main(String[] args) {
-
         System.out.println("== 자바 텍트스 게시판 시작 == ");
         Scanner sc = new Scanner(System.in);
 
         List<Article> articles = new ArrayList<>();
-            int lastArticleId = 1;
-            Article lastArticle = null;
+        writeArticleData(articles);
+
+            int lastArticleId = articles.get(articles.size()-1).id;
         while (true){
 
 
@@ -26,10 +31,9 @@ public class Main {
             String subject = sc.nextLine();
             System.out.print("내용 : ");
             String content = sc.nextLine();
-            int id = lastArticleId++;
+            int id = ++lastArticleId;
 
             Article article = new Article(id, subject, content);
-            lastArticle = article;
             articles.add(article);
             System.out.println("생성 된 게시물 : " + article);
             System.out.printf("%d번 게시물이 등록되었습니다. \n",  article.id);
@@ -39,7 +43,7 @@ public class Main {
                 continue;
             }
             System.out.println("번호 | 제목");
-//            v2. for문
+//            v2. 향상된 for문
 //            for(Article article : articles){
 //
 //                System.out.printf("%d | %s\n", article.id , article.subject);
@@ -57,7 +61,7 @@ public class Main {
 
         else if (cmd.equals("detail")) {
             System.out.println("==게시물 상세보기==");
-            Article article = lastArticle;
+            Article article = articles.get(articles.size()-1);
 
             if(article==null){
                 System.out.println("작성된 게시글이 존재하지 않습니다.");
