@@ -2,12 +2,12 @@ package com.jw.java.board;
 
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class Main {
     static void writeArticleData(List<Article> articles){
-            articles.add(new Article(1, "1번 게시물", "1번 내용"));
-            articles.add(new Article(2, "2번 게시물", "2번 내용"));
-            articles.add(new Article(3, "3번 게시물", "3번 내용"));
+        IntStream.rangeClosed(1,100).forEach(i->articles.add(new Article(i,"제목" + i , "내용" + i)));
+
         }
     public static void main(String[] args) {
         System.out.println("== 자바 텍트스 게시판 시작 == ");
@@ -37,26 +37,44 @@ public class Main {
             System.out.printf("%d번 게시물이 등록되었습니다. \n",  article.id);
             }
         else if(rq.getUrlPath().equals("/usr/article/list")){
+            if(articles.isEmpty()){
+                System.out.println("현재 게시물이 존재하지 않습니다.");
+                continue;
+            }
+            Map <String, String> params = rq.getParams();
+
+
+            List<Article> filteredArticles = articles;
+
+
+
             System.out.println("==게시물 리스트==");
             System.out.println("번호 | 제목");
 
-            List<Article> sortedArticles = articles;
-            Map <String, String> params = rq.getParams();
+
+            if(params.containsKey("searchKeyword")){
+                String searchKeyword = params.get("searchKeyword");
+
+                filteredArticles = new ArrayList<>();
+
+                for(Article article : articles){
+                    boolean matched = article.subject.contains(searchKeyword) || article.content.contains(searchKeyword);
+                    if(matched)filteredArticles.add(article);
+                }
+            }
+
             boolean orderByIdDesc = true;
             if(params.containsKey("orderBy") && params.get("orderBy").equals("idAsc")){
                 orderByIdDesc = false;
 
             }
+            List<Article> sortedArticles = filteredArticles;
             if (orderByIdDesc){
                 sortedArticles = Util.reverseList(sortedArticles);
 
             }
-            articles.forEach( article ->  System.out.printf("%d | %s\n", article.id , article.subject));
+            sortedArticles.forEach( article ->  System.out.printf("%d | %s\n", article.id , article.subject));
 
-            if(articles.isEmpty()){
-                System.out.println("현재 게시물이 존재하지 않습니다.");
-                continue;
-            }
 
 
         }

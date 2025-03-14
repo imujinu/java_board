@@ -7,11 +7,11 @@ public class SearchKeywordTest {
     public static void main(String[] args) {
        List <Article> articles = new ArrayList<>();
 
-        IntStream.rangeClosed(1,5).forEach(i-> articles.add(new Article(i , "제목" + i, "내용" + i)));
+        IntStream.rangeClosed(1,100).forEach(i-> articles.add(new Article(i , "제목" + i, "내용" + i)));
 
         articles.add(new Article(6, "자바는 재밌습니까?", "자바를 처음 공부하는데"));
 
-        String searchKeyword = "자바";
+        String searchKeyword = "제목";
 
         List<Article> filteredArticles = articles.stream().filter(article -> article.subject.contains(searchKeyword)).toList();
         System.out.println(filteredArticles);
