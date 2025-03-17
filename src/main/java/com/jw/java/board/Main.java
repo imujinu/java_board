@@ -5,7 +5,11 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public class Main {
-    static void writeArticleData(List<Article> articles){
+    static List<Article> articles = new ArrayList<>();
+    static int lastArticleId = 0;
+
+
+    static void writeArticleData(){
         IntStream.rangeClosed(1,100).forEach(i->articles.add(new Article(i,"제목" + i , "내용" + i)));
 
         }
@@ -13,10 +17,8 @@ public class Main {
         System.out.println("== 자바 텍트스 게시판 시작 == ");
         Scanner sc = new Scanner(System.in);
 
-        List<Article> articles = new ArrayList<>();
-        writeArticleData(articles);
+        writeArticleData();
 
-            int lastArticleId = articles.get(articles.size()-1).id;
         while (true){
 
         System.out.print("명령)");
@@ -24,29 +26,29 @@ public class Main {
         Rq rq = new Rq(cmd);
 
         if(rq.getUrlPath().equals("/usr/article/write")){
-            System.out.println("== 게시물 작성 ==");
-            System.out.print("제목 : ");
-            String subject = sc.nextLine();
-            System.out.print("내용 : ");
-            String content = sc.nextLine();
-            int id = ++lastArticleId;
+            actionUserArticleWrite(sc);
 
-            Article article = new Article(id, subject, content);
-            articles.add(article);
-            System.out.println("생성 된 게시물 : " + article);
-            System.out.printf("%d번 게시물이 등록되었습니다. \n",  article.id);
             }
 
         else if(rq.getUrlPath().equals("/usr/article/list")){
-            actionUserArticleList(rq,articles);
+            actionUserArticleList(rq);
         }
 
         else if (rq.getUrlPath().equals("/usr/article/detail")) {
-           actionUserArticleDetail(rq, articles);
+           actionUserArticleDetail(rq);
         } else if(rq.getUrlPath().equals("exit")){
 
         break;
-}else {
+}
+        else if(rq.getUrlPath().equals("/usr/article/modify")){
+            actionUserArticleModify(sc, rq);
+
+        }else if(rq.getUrlPath().equals("/usr/article/delete")){
+            actionUserArticleDelete(rq);
+
+        }
+
+        else {
             System.out.println("잘못된 명령어 입니다.");
         }
         System.out.printf("입력받은 명령어 : %s\n", cmd);
@@ -56,7 +58,109 @@ public class Main {
         sc.close();
     }
 
-    private static void actionUserArticleDetail(Rq rq, List<Article> articles) {
+    private static void actionUserArticleDelete(Rq rq) {
+        Map<String, String> params = rq.getParams();
+        int id= 0;
+        if(articles.isEmpty()){
+            System.out.println("작성된 게시글이 존재하지 않습니다.");
+        }
+
+        if(!params.containsKey("id")){
+            System.out.println("id 값을 입력해주세요");
+            return;
+        }
+
+        try{ id = Integer.parseInt(params.get("id"));} catch (NumberFormatException e) {
+            System.out.println("id를 정수형태로 입력해주세요");
+            return;
+
+
+        }
+
+        if(id > articles.size()){
+            System.out.println(id+"번 게시물은 존재하지 않습니다.");
+            return;
+        }
+
+        Article article = findById(articles,id);
+
+        if(article==null){
+            System.out.printf("%d번 게시물은 존재하지 않습니다\n", id);
+            return;
+        }
+        else{
+            articles.remove(article);
+        System.out.printf("%d번 게시물을 삭제하였습니다.",id);
+            return;
+        }
+
+
+
+    }
+
+    private static Article findById(List<Article> articles, int id) {
+//        for(Article article : articles){
+//            if(article.id == id){
+//               return article;
+//
+//            }
+//
+//        }
+
+        return  articles.stream()
+                .filter(article -> article.id == id)
+                .findFirst() // 첫 번째 요소 찾기
+                .orElse(null);
+    }
+
+    private static void actionUserArticleModify(Scanner sc, Rq rq) {
+        Map<String, String> params = rq.getParams();
+        int id= 0;
+        if(articles.isEmpty()){
+            System.out.println("작성된 게시글이 존재하지 않습니다.");
+        }
+
+        if(!params.containsKey("id")){
+            System.out.println("id 값을 입력해주세요");
+            return;
+        }
+
+        try{ id = Integer.parseInt(params.get("id"));} catch (NumberFormatException e) {
+            System.out.println("id를 정수형태로 입력해주세요");
+            return;
+
+
+        }
+
+        if(id > articles.size()){
+            System.out.println(id+"번 게시물은 존재하지 않습니다.");
+            return;
+        }
+
+        Article article = articles.get(id-1);
+        System.out.print("새 제목 : ");
+        article.subject = sc.nextLine();
+        System.out.print("새 내용 : ");
+        article.content = sc.nextLine();
+        System.out.printf("%d번 게시물이 수정되었습니다.", id);
+    }
+
+    private static void actionUserArticleWrite(Scanner sc) {
+        lastArticleId = articles.get(articles.size()-1).id;
+        System.out.println("== 게시물 작성 ==");
+        System.out.print("제목 : ");
+        String subject = sc.nextLine();
+        System.out.print("내용 : ");
+        String content = sc.nextLine();
+        int id = ++lastArticleId;
+
+        Article article = new Article(id, subject, content);
+        articles.add(article);
+        System.out.println("생성 된 게시물 : " + article);
+        System.out.printf("%d번 게시물이 등록되었습니다. \n",  article.id);
+    }
+
+    private static void actionUserArticleDetail(Rq rq) {
         System.out.println("==게시물 상세보기==");
 
         Map<String, String> params = rq.getParams();
@@ -81,16 +185,25 @@ public class Main {
             System.out.println(id+"번 게시물은 존재하지 않습니다.");
             return;
         }
+        Article article = findById(articles ,id );
+
+        if(article==null){
+            System.out.printf("%d번 게시물은 존재하지 않습니다. \n",id);
+        }
+        else{
+            System.out.println("번호 :" + article.id);
+            System.out.println("제목 : " + article.subject);
+            System.out.println("내용 : " + article.content);
+
+        }
 
 
-        Article article = articles.get(id-1);
-        System.out.println("번호 :" + article.id);
-        System.out.println("제목 : " + article.subject);
-        System.out.println("내용 : " + article.content);
+
+
 
     }
 
-    private static void actionUserArticleList(Rq rq, List<Article> articles) {
+    private static void actionUserArticleList(Rq rq) {
 
         if(articles.isEmpty()){
             System.out.println("현재 게시물이 존재하지 않습니다.");
