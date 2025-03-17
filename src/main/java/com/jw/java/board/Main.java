@@ -36,81 +36,13 @@ public class Main {
             System.out.println("생성 된 게시물 : " + article);
             System.out.printf("%d번 게시물이 등록되었습니다. \n",  article.id);
             }
+
         else if(rq.getUrlPath().equals("/usr/article/list")){
-            if(articles.isEmpty()){
-                System.out.println("현재 게시물이 존재하지 않습니다.");
-                continue;
-            }
-            Map <String, String> params = rq.getParams();
-
-
-            List<Article> filteredArticles = articles;
-
-
-
-            System.out.println("==게시물 리스트==");
-            System.out.println("번호 | 제목");
-
-
-            if(params.containsKey("searchKeyword")){
-                String searchKeyword = params.get("searchKeyword");
-
-                filteredArticles = new ArrayList<>();
-
-                for(Article article : articles){
-                    boolean matched = article.subject.contains(searchKeyword) || article.content.contains(searchKeyword);
-                    if(matched)filteredArticles.add(article);
-                }
-            }
-
-            boolean orderByIdDesc = true;
-            if(params.containsKey("orderBy") && params.get("orderBy").equals("idAsc")){
-                orderByIdDesc = false;
-
-            }
-            List<Article> sortedArticles = filteredArticles;
-            if (orderByIdDesc){
-                sortedArticles = Util.reverseList(sortedArticles);
-
-            }
-            sortedArticles.forEach( article ->  System.out.printf("%d | %s\n", article.id , article.subject));
-
-
-
+            actionUserArticleList(rq,articles);
         }
 
         else if (rq.getUrlPath().equals("/usr/article/detail")) {
-            System.out.println("==게시물 상세보기==");
-
-            Map<String, String> params = rq.getParams();
-           int id= 0;
-            if(articles.isEmpty()){
-                System.out.println("작성된 게시글이 존재하지 않습니다.");
-            }
-
-            if(!params.containsKey("id")){
-                System.out.println("id 값을 입력해주세요");
-                continue;
-            }
-
-            try{ id = Integer.parseInt(params.get("id"));} catch (NumberFormatException e) {
-                System.out.println("id를 정수형태로 입력해주세요");
-                continue;
-
-
-            }
-
-            if(id > articles.size()){
-                System.out.println(id+"번 게시물은 존재하지 않습니다.");
-                continue;
-            }
-
-
-            Article article = articles.get(id-1);
-            System.out.println("번호 :" + article.id);
-            System.out.println("제목 : " + article.subject);
-            System.out.println("내용 : " + article.content);
-
+           actionUserArticleDetail(rq, articles);
         } else if(rq.getUrlPath().equals("exit")){
 
         break;
@@ -122,6 +54,84 @@ public class Main {
 
         System.out.println("== 자바 텍트스 게시판 끝 == ");
         sc.close();
+    }
+
+    private static void actionUserArticleDetail(Rq rq, List<Article> articles) {
+        System.out.println("==게시물 상세보기==");
+
+        Map<String, String> params = rq.getParams();
+        int id= 0;
+        if(articles.isEmpty()){
+            System.out.println("작성된 게시글이 존재하지 않습니다.");
+        }
+
+        if(!params.containsKey("id")){
+            System.out.println("id 값을 입력해주세요");
+            return;
+        }
+
+        try{ id = Integer.parseInt(params.get("id"));} catch (NumberFormatException e) {
+            System.out.println("id를 정수형태로 입력해주세요");
+            return;
+
+
+        }
+
+        if(id > articles.size()){
+            System.out.println(id+"번 게시물은 존재하지 않습니다.");
+            return;
+        }
+
+
+        Article article = articles.get(id-1);
+        System.out.println("번호 :" + article.id);
+        System.out.println("제목 : " + article.subject);
+        System.out.println("내용 : " + article.content);
+
+    }
+
+    private static void actionUserArticleList(Rq rq, List<Article> articles) {
+
+        if(articles.isEmpty()){
+            System.out.println("현재 게시물이 존재하지 않습니다.");
+            return;
+        }
+        Map <String, String> params = rq.getParams();
+
+
+        List<Article> filteredArticles = articles;
+
+
+
+        System.out.println("==게시물 리스트==");
+        System.out.println("번호 | 제목");
+
+
+        if(params.containsKey("searchKeyword")){
+            String searchKeyword = params.get("searchKeyword");
+
+            filteredArticles = new ArrayList<>();
+
+            for(Article article : articles){
+                boolean matched = article.subject.contains(searchKeyword) || article.content.contains(searchKeyword);
+                if(matched)filteredArticles.add(article);
+            }
+        }
+
+        boolean orderByIdDesc = true;
+        if(params.containsKey("orderBy") && params.get("orderBy").equals("idAsc")){
+            orderByIdDesc = false;
+
+        }
+        List<Article> sortedArticles = filteredArticles;
+        if (orderByIdDesc){
+            sortedArticles = Util.reverseList(sortedArticles);
+
+        }
+        sortedArticles.forEach( article ->  System.out.printf("%d | %s\n", article.id , article.subject));
+
+
+
     }
 
 }
